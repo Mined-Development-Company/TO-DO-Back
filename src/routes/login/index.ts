@@ -1,9 +1,7 @@
 import { z } from 'zod'
-import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
 import { Router } from 'express'
-import { prisma } from '../../utils/prisma'
 import { loginValidation } from '../../validations/loginValidation'
+import { authController } from '../../modules/user/auth'
 
 export const loginRouter = Router()
 
@@ -20,47 +18,17 @@ loginRouter.all('/login', (req, res, next) => {
 
 loginRouter.post('/login', async (req, res) => {
 	try {
-		const { email, password } = loginValidation.parse(req.body)
+		const body = loginValidation.parse(req.body)
 
-		if (!email || !password) {
-			return res.status(400).json({ message: 'Preencha todos os campos' })
-		}
-
-		const user = await prisma.user.findUnique({
-			where: {
-				email: email
-			}
+		const { status, data, error } = await authController.handle({
+			body
 		})
 
-		if (!user) {
-			return res.status(400).json({ message: 'Usuário não encontrado' })
-		}
-
-		const isPasswordCorrect = await bcrypt.compare(password, user.password)
-
-		if (!isPasswordCorrect) {
-			return res.status(400).json({ message: 'Senha incorreta' })
-		}
-
-		const credentialsForToken = {
-			id: user.id,
-			name: user.name,
-			email: user.email
-		}
-		const secret = process.env.JWT_SECRET as string
-		const token = jwt.sign({ credentialsForToken }, secret, {
-			expiresIn: '7d'
-		})
-
-		return res.status(200).json({
-			id: user.id,
-			name: user.name,
-			email: user.email,
-			token: token
-		})
+		return res.status(status).json(error ? { error } : data)
 	} catch (error) {
 		if (error instanceof z.ZodError) {
-			return res.status(400).json(error.issues[0].message)
+			return res.status(400).json({ error: error.issues.map((elem) => elem.message) })
 		}
+		return res.status(500).json({ error })
 	}
 })
