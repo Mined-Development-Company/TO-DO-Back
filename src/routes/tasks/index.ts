@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import jwt from 'jsonwebtoken'
 import { Router } from 'express'
 import { prisma } from '../../utils/prisma'
 import { tasksValidation } from '../../validations/tasksValidation'
@@ -7,36 +6,42 @@ import { tasksValidation } from '../../validations/tasksValidation'
 export const tasksRouter = Router()
 
 tasksRouter.get('/tasks', async (req, res) => {
-	const userId = req.userId
+	try {
+		const userId = req.userId
 
-	const tasks = await prisma.toDo.findMany({
-		where: {
-			userId: userId
-		}
-	})
+		const tasks = await prisma.toDo.findMany({
+			where: {
+				userId: userId
+			}
+		})
 
-	return res.status(200).json(tasks)
+		return res.status(200).json(tasks)
+	} catch (error) {
+		return res.status(400).json({ message: 'Unauthorized' })
+	}
 })
 
 tasksRouter.delete('/tasks/:id', async (req, res) => {
-	const taskId = Number(req.params.id)
-	const userId = req.userId
+	try {
+		const taskId = Number(req.params.id)
+		const userId = req.userId
 
-	const task = await prisma.toDo.findUnique({
-		where: {
-			id: taskId
-		}
-	})
-
-	if (task?.userId === userId) {
-		await prisma.toDo.delete({
+		const task = await prisma.toDo.findUnique({
 			where: {
 				id: taskId
 			}
 		})
 
-		return res.status(200).json({ message: 'Tarefa deletada com sucesso' })
-	} else {
+		if (task?.userId === userId) {
+			await prisma.toDo.delete({
+				where: {
+					id: taskId
+				}
+			})
+
+			return res.status(200).json({ message: 'Tarefa deletada com sucesso' })
+		}
+	} catch (error) {
 		return res.status(400).json({ message: 'Unauthorized' })
 	}
 })
@@ -84,10 +89,8 @@ tasksRouter.put('/tasks/:id', async (req, res) => {
 			})
 
 			return res.status(200).json({ message: 'Tarefa atualizada com sucesso' })
-		} else {
-			return res.status(400).json({ message: 'Unauthorized' })
 		}
 	} catch (error) {
-		return res.status(400).json({ message: 'Ops... algo deu errado!' })
+		return res.status(400).json({ message: 'Unauthorized' })
 	}
 })

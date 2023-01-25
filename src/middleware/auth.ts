@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken'
 import { Request, Response, NextFunction } from 'express'
-
 interface UserTokenDecoded {
 	credentialsForToken: {
 		id: string
@@ -22,6 +21,6 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
 		req.userId = Number(decoded.credentialsForToken.id)
 		next()
 	} catch (error) {
-		return res.status(401).json({ message: 'Invalid Token' })
+		return res.status(401).json({ message: 'Unauthorized' })
 	}
 }
