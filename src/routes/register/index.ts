@@ -1,15 +1,9 @@
-import { z } from 'zod'
-import bcrypt from 'bcrypt'
 import { Router } from 'express'
-import { prisma } from '../../utils/prisma'
-import { registerValidation } from '../../validations/registerValidation'
+import { RegisterController } from '../../controllers/RegisterController'
 
 export const registerRouter = Router()
 
-registerRouter.all('/register', (req, res, next) => {
-	res.header('Access-Control-Allow-Origin', '*')
-	res.header('Access-Control-Allow-Methods', 'POST')
-	res.header('Access-Control-Allow-Headers', 'Content-Type')
+registerRouter.all('/', (req, res, next) => {
 	if (req.method === 'POST') {
 		next()
 	} else {
@@ -17,39 +11,4 @@ registerRouter.all('/register', (req, res, next) => {
 	}
 })
 
-registerRouter.post('/register', async (req, res) => {
-	try {
-		const { name, email, password } = registerValidation.parse(req.body)
-
-		if (!name || !email || !password) {
-			return res.status(400).json({ message: 'Preencha todos os campos' })
-		}
-
-		const userExists = await prisma.user.findUnique({
-			where: {
-				email: email
-			}
-		})
-
-		if (userExists) {
-			return res.status(400).json({ message: 'Usuário já cadastrado' })
-		}
-
-		const genSalt = await bcrypt.genSalt(10)
-		const hashedPassword = await bcrypt.hash(password, genSalt)
-
-		const user = await prisma.user.create({
-			data: {
-				name: name,
-				email: email,
-				password: hashedPassword
-			}
-		})
-
-		return res.status(201).json({ message: 'Usuário criado com sucesso' })
-	} catch (error) {
-		if (error instanceof z.ZodError) {
-			return res.status(400).json(error.issues[0])
-		}
-	}
-})
+registerRouter.post('/', RegisterController.create)
