@@ -1,7 +1,7 @@
 import { prisma } from '../utils/prisma'
 import { IUserData, IUserRepository, IUserRepositoryCreate } from '../interfaces'
 
-export class PrismaRepository implements IUserRepository {
+export class PrismaUserRepository implements IUserRepository {
 	async create(user: IUserRepositoryCreate): Promise<IUserData> {
 		const newUser = await prisma.user.create({
 			data: {
