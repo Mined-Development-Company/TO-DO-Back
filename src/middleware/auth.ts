@@ -1,11 +1,9 @@
 import jwt from 'jsonwebtoken'
 import { Request, Response, NextFunction } from 'express'
-interface UserTokenDecoded {
-	credentialsForToken: {
-		id: string
-		name: string
-		email: string
-	}
+interface TokenDecoded {
+	id: string
+	name: string
+	email: string
 }
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
@@ -17,8 +15,8 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
 
 	try {
 		const secret = process.env.JWT_SECRET as string
-		const decoded = jwt.verify(token, secret) as UserTokenDecoded
-		req.userId = Number(decoded.credentialsForToken.id)
+		const decoded = jwt.verify(token, secret) as TokenDecoded
+		req.userId = Number(decoded.id)
 		next()
 	} catch (error) {
 		return res.status(401).json({ message: 'Unauthorized' })

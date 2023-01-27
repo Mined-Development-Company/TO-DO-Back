@@ -5,7 +5,7 @@ import { tasksValidation } from '../../validations/tasksValidation'
 
 export const tasksRouter = Router()
 
-tasksRouter.get('/tasks', async (req, res) => {
+tasksRouter.get('/', async (req, res) => {
 	try {
 		const userId = req.userId
 
@@ -21,7 +21,7 @@ tasksRouter.get('/tasks', async (req, res) => {
 	}
 })
 
-tasksRouter.delete('/tasks/:id', async (req, res) => {
+tasksRouter.delete('/:id', async (req, res) => {
 	try {
 		const taskId = Number(req.params.id)
 		const userId = req.userId
@@ -46,7 +46,7 @@ tasksRouter.delete('/tasks/:id', async (req, res) => {
 	}
 })
 
-tasksRouter.post('/tasks', async (req, res) => {
+tasksRouter.post('/', async (req, res) => {
 	try {
 		const userId = Number(req.userId)
 		const { title, priority } = tasksValidation.parse(req.body)
@@ -67,7 +67,7 @@ tasksRouter.post('/tasks', async (req, res) => {
 	}
 })
 
-tasksRouter.put('/tasks/:id', async (req, res) => {
+tasksRouter.put('/:id', async (req, res) => {
 	try {
 		const userId = req.userId
 		const taskId = Number(req.params.id)
